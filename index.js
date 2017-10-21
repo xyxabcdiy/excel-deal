@@ -54,7 +54,17 @@ oldWorkbook.xlsx.readFile(filename)
 
 function handleSheet(worksheet) {
     let sheetName = worksheet.name;
-    let builder = worksheet.getCell("B2").value;
+    let builder = "";
+
+    let b2Value = worksheet.getCell("B2").value;
+    let c2Value = worksheet.getCell("C2").value;
+
+    if (b2Value === c2Value) {
+        builder = b2Value;
+    } else {
+        builder = worksheet.getCell("B3").value;
+    }
+
     let payMethod = worksheet.getCell("J1").value;
 
     if (payMethod && payMethod.richText !== undefined) {
@@ -68,30 +78,31 @@ function handleSheet(worksheet) {
     let projectNameCol = worksheet.getColumn('A');
     let columnRowNumbers = [];
 
-    let originalDate = "";
-    let finalDate = "";
-
     projectNameCol.eachCell((cell, rowNumber) => {
         if (cell.value !== null) {
             columnRowNumbers.push(rowNumber)
         }
-        if (cell.value instanceof Date && !originalDate) {
-            originalDate = (new Date(cell.value).Format("yyyy年MM月dd"));
-        }
     });
 
     let row = worksheet.getRow(columnRowNumbers[columnRowNumbers.length - 1]);
-    let newRow = [builder, sheetName, payMethod, ""];
+    let newRow = [builder, sheetName, payMethod];
 
-    row.eachCell((cell, colNumber) => {
+    row.eachCell({includeEmpty: true}, (cell, colNumber) => {
+        let cellValue = cell.value;
         if (colNumber === 1) {
-            finalDate = (new Date(cell.value).Format("yyyy年MM月dd"));
-        } else if (cell.value && cell.value.result !== undefined) {
-            newRow.push(cell.value.result)
+            let date = "";
+            if (cellValue instanceof Date) {
+                date = (new Date(cellValue).Format("yyyy年MM月dd"));
+            } else {
+                date = cellValue
+            }
+            newRow.push(date)
+        } else if (cellValue && cellValue.result !== undefined) {
+            newRow.push(cellValue.result);
         } else {
-            newRow.push(cell.value)
+            newRow.push(cellValue);
         }
     });
-    newRow[3] = originalDate + "-" + finalDate;
+
     newSheet.addRow(newRow)
 }
