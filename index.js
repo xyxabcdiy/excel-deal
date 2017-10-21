@@ -104,5 +104,5 @@ function handleSheet(worksheet) {
         }
     });
 
-    newSheet.addRow(newRow)
+    newSheet.addRow(newRow);
 }
